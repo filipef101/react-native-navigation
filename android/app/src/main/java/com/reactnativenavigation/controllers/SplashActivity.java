@@ -12,6 +12,7 @@ import android.view.View;
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.*;
 import com.reactnativenavigation.utils.CompatUtils;
+import android.content.pm.ActivityInfo;
 
 public abstract class SplashActivity extends AppCompatActivity {
     public static boolean isResumed = false;
