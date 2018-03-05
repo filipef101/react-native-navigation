@@ -29,6 +29,7 @@ public abstract class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         LaunchArgs.instance.set(getIntent());
         setSplashLayout();
