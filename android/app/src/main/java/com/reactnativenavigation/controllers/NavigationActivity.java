@@ -3,11 +3,15 @@ package com.reactnativenavigation.controllers;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Window;
 import com.reactnativenavigation.R;
@@ -39,6 +43,7 @@ import com.reactnativenavigation.params.TitleBarLeftButtonParams;
 import com.reactnativenavigation.react.ReactGateway;
 import com.reactnativenavigation.screens.NavigationType;
 import com.reactnativenavigation.screens.Screen;
+import com.reactnativenavigation.utils.CenterCropDrawable;
 import com.reactnativenavigation.utils.OrientationHelper;
 import com.reactnativenavigation.views.SideMenu.Side;
 
@@ -107,7 +112,8 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             screenBackgroundImageName = activityParams.screenParams.styleParams.screenBackgroundImageName;
         }
         if (screenBackgroundImageName != null) {
-            layout.asView().setBackgroundResource(this.getResources().getIdentifier(screenBackgroundImageName, "drawable", this.getPackageName()));
+            Drawable myDrawable = this.getResources().getDrawable(this.getResources().getIdentifier(screenBackgroundImageName, "drawable", this.getPackageName()));
+            layout.asView().setBackground(new CenterCropDrawable(myDrawable));
         }
         setContentView(layout.asView());
     }
