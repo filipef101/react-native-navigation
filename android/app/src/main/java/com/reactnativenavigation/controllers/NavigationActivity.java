@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -11,6 +13,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Window;
@@ -66,6 +70,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private ActivityParams activityParams;
     private ModalController modalController;
     private Layout layout;
+    private Point screenSize;
     @Nullable
     private PermissionListener mPermissionListener;
 
@@ -104,6 +109,9 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     private void createLayout() {
+        Display display = getWindowManager().getDefaultDisplay();
+        screenSize = new Point();
+        display.getSize(screenSize);
         layout = LayoutFactory.create(this, activityParams);
         if (hasBackgroundColor()) {
             layout.asView().setBackgroundColor(AppStyle.appStyle.screenBackgroundColor.getColor());
@@ -113,10 +121,69 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             screenBackgroundImageName = activityParams.screenParams.styleParams.screenBackgroundImageName;
         }
         if (screenBackgroundImageName != null) {
-            Drawable myDrawable = this.getResources().getDrawable(this.getResources().getIdentifier(screenBackgroundImageName, "drawable", this.getPackageName()));
+            Drawable myDrawable = new BitmapDrawable(getResources(), loadBitmapSafety(getResources().getIdentifier(screenBackgroundImageName, "drawable", this.getPackageName()), 1));
             layout.asView().setBackground(new CenterCropDrawable(myDrawable));
         }
         setContentView(layout.asView());
+    }
+
+    /*private Bitmap loadBitmap(int id) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(getResources(), id, options);
+
+        //set inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, screenSize.x / 2, screenSize.y / 2);
+
+        Log.d("SAMPLESIZE","SIZE "+options.inSampleSize);
+
+        //set inJustDecodeBounds = false;
+        options.inJustDecodeBounds = false;
+
+        //decode
+        return BitmapFactory.decodeResource(getResources(), id, options);
+    }*/
+
+    private Bitmap loadBitmapSafety(int id, int sampleSize ){
+        BitmapFactory.Options ops = new BitmapFactory.Options();
+        ops.inSampleSize = sampleSize;
+        ops.inDither=false;
+
+        try {
+            return BitmapFactory.decodeResource(getResources(), id, ops);
+
+        } catch (OutOfMemoryError e) {
+            if (sampleSize == 4)
+                return null;
+            return loadBitmapSafety(id, sampleSize +1);
+
+        } catch (Exception e){
+            return null;
+        }
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        Log.d("SAMPLESIZE","SCREENW "+reqWidth);
+        Log.d("SAMPLESIZE","SCREENH "+reqHeight);
+        Log.d("SAMPLESIZE","WIDTH "+ options.outWidth);
+        Log.d("SAMPLESIZE","HEIGHT "+ options.outHeight);
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            final int internalHeight = height;
+            final int internalWidth = width;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((internalHeight / inSampleSize) > reqHeight
+                    || (internalWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
     }
 
     private boolean hasBackgroundColor() {
