@@ -103,12 +103,63 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
   
   // set background image at root level
   NSString *rootBackgroundImageName = props[@"style"][@"rootBackgroundImageName"];
-  if (rootBackgroundImageName) {
-    UIImage *image = [UIImage imageNamed: rootBackgroundImageName];
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-    [controller.view insertSubview:imageView atIndex:0];
-  }
-  
+    if ([rootBackgroundImageName length] > 0) {
+        
+        UIImage *image = [UIImage imageNamed: rootBackgroundImageName];
+        //    viewController.view.backgroundColor = (__bridge id _Nullable)(image.CGImage);
+        //      viewController.view.layer.contentsGravity = kCAGravityResizeAspectFill;
+        UIImageView *_imageView = [[UIImageView alloc] initWithFrame:controller.view.bounds];
+        _imageView.image = image;
+        _imageView.clipsToBounds = true;
+        
+        double width = image.size.width;
+        double height = image.size.height;
+        CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+        CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+        double imgR = height/width;
+        double screenR = screenHeight/screenWidth;
+        if (screenR >= imgR) {
+            @try {
+                [_imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+                //                NSDictionary *nameMap = @{@"imageView" : _imageView};
+                _imageView.contentMode = UIViewContentModeScaleAspectFill;
+                //                [_imageView setFrame:viewController.view.bounds];
+            }
+            @catch (NSException *exception) {
+                NSLog(@"%@", exception.reason);
+            }
+            @finally {
+                
+            }
+
+        } else {
+            double apect = width/height;
+            double nHeight = screenWidth/ apect;
+            _imageView.frame = CGRectMake(0, 0, screenWidth, nHeight);
+        }
+        
+        @try {
+            [controller.view addSubview:_imageView];
+            [controller.view sendSubviewToBack:_imageView];
+        }
+        @catch (NSException *exception) {
+            NSLog(@"%@", exception.reason);
+        }
+
+        if (screenR >= imgR) {
+            NSDictionary *nameMap = @{@"imageView" : _imageView};
+            NSArray *_verticalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-0-[imageView]-0-|"
+                                                                                    options:NSLayoutFormatAlignAllCenterY
+                                                                                    metrics:nil
+                                                                                      views:nameMap];
+            
+            
+            
+            
+            [controller.view addConstraints:_verticalConstraints];
+        }
+        
+    }
   return controller;
 }
 
@@ -357,8 +408,8 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
       
       double width = image.size.width;
       double height = image.size.height;
-      double screenWidth = self.view.frame.size.width;
-      double screenHeight = self.view.frame.size.height;
+      CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+      CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
       double imgR = height/width;
       double screenR = screenHeight/screenWidth;
       if (screenR >= imgR) {
