@@ -346,11 +346,66 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
   }
   
   NSString *screenBackgroundImageName = self.navigatorStyle[@"screenBackgroundImageName"];
-  if (screenBackgroundImageName) {
+  if ([screenBackgroundImageName length] > 0) {
     
     UIImage *image = [UIImage imageNamed: screenBackgroundImageName];
-    viewController.view.layer.contents = (__bridge id _Nullable)(image.CGImage);
-      viewController.view.layer.contentsGravity = kCAGravityResizeAspectFill;
+//    viewController.view.backgroundColor = (__bridge id _Nullable)(image.CGImage);
+//      viewController.view.layer.contentsGravity = kCAGravityResizeAspectFill;
+      UIImageView *_imageView = [[UIImageView alloc] initWithFrame:viewController.view.bounds];
+      _imageView.image = image;
+      _imageView.clipsToBounds = true;
+      
+      double width = image.size.width;
+      double height = image.size.height;
+      double screenWidth = self.view.frame.size.width;
+      double screenHeight = self.view.frame.size.height;
+      double imgR = height/width;
+      double screenR = screenHeight/screenWidth;
+      if (screenR >= imgR) {
+          @try {
+              [_imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+              //                NSDictionary *nameMap = @{@"imageView" : _imageView};
+              _imageView.contentMode = UIViewContentModeScaleAspectFill;
+              //                [_imageView setFrame:viewController.view.bounds];
+          }
+          @catch (NSException *exception) {
+              NSLog(@"%@", exception.reason);
+          }
+          @finally {
+            
+          }
+          
+          
+      } else {
+          double apect = width/height;
+          double nHeight = screenWidth/ apect;
+          _imageView.frame = CGRectMake(0, 0, screenWidth, nHeight);
+      }
+   
+      @try {
+          [viewController.view addSubview:_imageView];
+          [viewController.view sendSubviewToBack:_imageView];
+      }
+      @catch (NSException *exception) {
+          NSLog(@"%@", exception.reason);
+      }
+      
+
+      
+
+      if (screenR >= imgR) {
+          NSDictionary *nameMap = @{@"imageView" : _imageView};
+      NSArray *_verticalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-0-[imageView]-0-|"
+                                                                             options:NSLayoutFormatAlignAllCenterY
+                                                                             metrics:nil
+                                                                               views:nameMap];
+
+         
+
+
+      [viewController.view addConstraints:_verticalConstraints];
+      }
+
   }
   
   NSString *navBarBackgroundColor = self.navigatorStyle[@"navBarBackgroundColor"];
